@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="text/javascript" src="./js/three.js"></script>
+    <script type="text/javascript" src="./js/DragControls.js"></script>
+    <script type="text/javascript" src="./js/OrbitControls.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        /**
+        * 创建场景对象Scene
+        */
+        var scene = new THREE.Scene();
+        var axes = new THREE.AxesHelper(3000);
+        scene.add(axes);
+        /**
+         * 创建网格模型
+         */
+        // var geometry = new THREE.BoxGeometry(800, 800, 800);
+        var geometry = new THREE.OctahedronGeometry(800);
+        let mats = []
+        var material1 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material2 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material3 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material4 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material5 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material6 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material7 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        var material8 = new THREE.MeshLambertMaterial({
+            color: 0x80ffff,
+            side: THREE.DoubleSide,
+        });
+        mats.push(material1)
+        mats.push(material2)
+        mats.push(material3)
+        mats.push(material4)
+        mats.push(material5)
+        mats.push(material6)
+        // mats.push(material7)
+        // mats.push(material8)
+        // 返回网格模型对象Mesh
+        var mesh = new THREE.Mesh(geometry, material1);
+        mesh.name = "test"
+        scene.add(mesh)
+        /**
+         * 光源设置
+         */
+        //点光源
+        var point = new THREE.PointLight(0xffffff);
+        point.position.set(1600, 2000, 1600); //点光源位置
+        scene.add(point); //点光源添加到场景中
+        //环境光
+        var ambient = new THREE.AmbientLight(0x444444);
+        scene.add(ambient);
+        // console.log(scene)
+        // console.log(scene.children)
+        /**
+         * 相机设置
+         */
+        var width = window.innerWidth; //窗口宽度
+        var height = window.innerHeight; //窗口高度
+        var k = width / height; //窗口宽高比
+        var s = 3000; //三维场景显示范围控制系数，系数越大，显示的范围越大
+        //创建相机对象
+        var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 8000);
+        camera.position.set(3200, 1000, 4000); //设置相机位置
+        camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+        /**
+         * 创建渲染器对象
+         */
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0xb9d3ff, 1); //设置背景颜色
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+        //执行渲染操作   指定场景、相机作为参数
+        function render() {
+            renderer.render(scene, camera);
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            // orbitControls.update();
+            render();
+        }
+        // mesh.rotation.set(0, Math.PI,0)
+        animate()
+        // document.addEventListener('pointermove', onPointerMove)
+        // document.addEventListener('dblclick', ondblclick)
+
+
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
+        let selectedObject = null;
+
+        function ondblclick(event) {
+            // 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            // 通过摄像机和鼠标位置更新射线
+            raycaster.setFromCamera(pointer, camera);
+
+            const intersects = raycaster.intersectObject(mesh, true);
+            if (intersects.length > 0) {
+                const res = intersects.filter(function (res) {
+                    return res && res.object;
+                })[0];
+                if (res && res.object) {
+                    selectedObject = res.object
+                    materialIndex = res.face.materialIndex
+                    selectedObject.material.forEach(items => {
+                        items.color.set('#fff')
+                    })
+                    enable = false
+                    controls = new THREE.DragControls(objects, camera, renderer.domElement);
+                    controls.addEventListener('drag', render);
+                    orbitControls.enabled = false
+                }
+            }
+        }
+        var orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+        orbitControls.listenToKeyEvents(window); // optional
+        orbitControls.enableDamping = true;
+        let materialIndex;
+        let enable = true;
+        let objects = [];
+        objects.push(mesh)
+        function onPointerMove(event) {
+            if (enable) {
+                if (selectedObject) {
+                    selectedObject.material[materialIndex].color.set('#80ffff')
+                    selectedObject = null;
+                }
+                // 将鼠标位置归一化为设备坐标。x 和 y 方向的取值范围是 (-1 to +1)
+                pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+                // 通过摄像机和鼠标位置更新射线
+                raycaster.setFromCamera(pointer, camera);
+
+                const intersects = raycaster.intersectObject(mesh, true);
+                if (intersects.length > 0) {
+                    const res = intersects.filter(function (res) {
+                        return res && res.object;
+                    })[0];
+                    if (res && res.object) {
+                        selectedObject = res.object
+                        materialIndex = res.face.materialIndex
+                        selectedObject.material[materialIndex].color.set('#fff')
+                    }
+                }
+            }
+        }
+        document.addEventListener('pointerdown', (event) => {
+            enable = true
+            orbitControls.enabled = true
+            // if (selectedObject) {
+            //     selectedObject.material.forEach(items => {
+            //         items.color.set('#80ffff')
+            //     })
+            //     selectedObject = null;
+            // }
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+            // 通过摄像机和鼠标位置更新射线
+            raycaster.setFromCamera(pointer, camera);
+
+            const intersects = raycaster.intersectObject(mesh, true);
+            if (intersects.length > 0) {
+                const res = intersects.filter(function (res) {
+                    return res && res.object;
+                })[0];
+                if (res && res.object) {
+                    selectedObject = res.object
+                    // materialIndex = res.face.materialIndex
+                    // selectedObject.material[materialIndex].color.set('#fff')
+                    enable = false
+                    orbitControls.enabled = false
+                    // 获取根据法向量需要改变的点的下标
+                    let index = getNormalsIndex(selectedObject, res.face.a)
+                    // 几何体点坐标的数组
+                    var pointArr = selectedObject.geometry.attributes.position.array;
+                    // 获取需要改变的点的所有法向量的点的下标数组
+                    let indexArr = findPoint(pointArr, index)
+                    let startPoint = event
+                    document.addEventListener('pointermove', move)
+                    function move(event) {
+                        let temp = event
+                        // changePointPosition(pointArr, index, res.face.normal, event)
+                        var changeArr = changePointPosition(pointArr, indexArr, res.face.normal, startPoint)
+                        var vertices = new Float32Array(changeArr);
+                        var attribue = new THREE.BufferAttribute(vertices, 3);
+                        selectedObject.geometry.attributes.position = attribue;
+                        // 更新几何体的position和包围盒，包围球
+                        selectedObject.geometry.attributes.position.needsUpdate = true;
+                        selectedObject.geometry.computeBoundingBox()
+                        selectedObject.geometry.computeBoundingSphere()
+                        startPoint = temp
+                    }
+                }
+            }
+            document.addEventListener('pointerup', () => { document.removeEventListener('pointermove', move) })
+        })
+        // 根据 normal 法向量,获取 object 网格模型对象需要改变的点的下标
+        function getNormalsIndex(object, pointIndex) {
+            // pointIndex 为选中的face的其中一点的下标，index 为所在点的x坐标在 position 的下标
+            let index = pointIndex * 3;
+            // 记录所有同法向量的点的 X 坐标的下标
+            let arr = [];
+            let pointNormalArr = object.geometry.attributes.normal.array
+            let normalArr = [pointNormalArr[index], pointNormalArr[index + 1], pointNormalArr[index + 2]]
+            // 遍历寻找同法向量的点的X坐标的下标
+            for (let i = 0; i < pointNormalArr.length; i += 3) {
+                if (pointNormalArr[i] === normalArr[0] && pointNormalArr[i + 1] === normalArr[1] && pointNormalArr[i + 2] === normalArr[2]) {
+                    arr.push(i)
+                }
+            }
+            return arr;
+        }
+        // 改变点的坐标
+        function changePointPosition(pointArr, indexArr, normal, startPoint) {
+            var startV3 = screenPointToThreeCoords(startPoint.clientX, startPoint.clientY)
+            var endV3 = screenPointToThreeCoords(event.clientX, event.clientY)
+            // var startV3 = new THREE.Vector3((startPoint.clientX / window.innerWidth) * 2 - 1, - (startPoint.clientY / window.innerHeight) * 2 + 1, (startPoint.clientX / window.innerWidth) * 2 - 1)
+            // var endV3 = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, - (event.clientY / window.innerHeight) * 2 + 1, (event.clientX / window.innerWidth) * 2 - 1)
+            var distancev3 = new THREE.Vector3()
+            distancev3.subVectors(endV3, startV3);
+            var distance = distancev3.dot(normal) 
+            var xyzArr = [distance * normal.x, distance * normal.y, distance * normal.z]
+            let i = 0;
+            while (i < indexArr.length) {
+                let j = 0;
+                pointArr[indexArr[i]] += xyzArr[j];
+                pointArr[indexArr[i] + 1] += xyzArr[j + 1];
+                pointArr[indexArr[i] + 2] += xyzArr[j + 2];
+                i++;
+            }
+            return pointArr
+            // console.log(pointArr)
+        }
+        // 寻找不同法向量的需要改变的点
+        function findPoint(pointArr, index) {
+            // index 为所有需要找的点的下标数组
+            // 存放需要改变的点的X坐标下标
+            let arr = [];
+            // time 标记存入次数，每个点存入三次不同的向量
+            let time = 0;
+            for (let i = 0; i < index.length; i++) {
+                // comArr 为需要比较的点的X,Y,Z坐标数组
+                let comArr = [pointArr[index[i]], pointArr[index[i] + 1], pointArr[index[i] + 2]];
+                for (let k = 0; k < pointArr.length;k += 3) {
+                    if (comArr[0] === pointArr[k] && comArr[1] === pointArr[k + 1] && comArr[2] === pointArr[k + 2]) {
+                        arr.push(k);
+                    }
+                }
+            }
+            return arr;
+        }
+
+        function screenPointToThreeCoords(x, y) {
+            var vec = new THREE.Vector3(); // create once and reuse
+            var pos = new THREE.Vector3(); // create once and reuse
+
+            vec.set((x / renderer.domElement.clientWidth) * 2 - 1, - (y / renderer.domElement.clientHeight) * 2 + 1, -1);
+
+            vec.unproject(camera);
+
+            console.log('vec', vec)
+            return vec;
+        }
+    </script>
+</body>
+
+</html>
